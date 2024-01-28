@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Chess</title>
+    
+    <!-- STYLESHEET -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- JAVASCRIPT -->
+    <script src="initalisation.js"></script>
+    <script src="square.js"></script>
+    <script src="board.js"></script>
+    <script src="piece.js"></script>
+    <script src="moves.js"></script>
+  </head>
+  <body>
+    <canvas id="gameCanv" width="400px" height="400px"></canvas>
+    <button onclick="newGame();" id="newGame">New Game</button>
+    <button onclick="board.generateFenString();" id="generateFenString">Generate FEN string</button>
+
+    <img src="images/kwhite.png" id="kwhite" class="piece">
+    <img src="images/kblack.png" id="kblack" class="piece">
+    <img src="images/qwhite.png" id="qwhite" class="piece">
+    <img src="images/qblack.png" id="qblack" class="piece">
+    <img src="images/bwhite.png" id="bwhite" class="piece">
+    <img src="images/bblack.png" id="bblack" class="piece">
+    <img src="images/nwhite.png" id="nwhite" class="piece">
+    <img src="images/nblack.png" id="nblack" class="piece">
+    <img src="images/rwhite.png" id="rwhite" class="piece">
+    <img src="images/rblack.png" id="rblack" class="piece">
+    <img src="images/pwhite.png" id="pwhite" class="piece">
+    <img src="images/pblack.png" id="pblack" class="piece">
+  </body>
+</html>
