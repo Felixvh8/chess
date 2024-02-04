@@ -6,6 +6,7 @@ class Square {
     this.empty = true;
     this.selected = false;
     this.piece = 0;
+    this.legal = false;
   }
 
   // Places a piece in a square

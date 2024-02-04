@@ -12,12 +12,14 @@
     <script src="square.js"></script>
     <script src="board.js"></script>
     <script src="piece.js"></script>
-    <script src="moves.js"></script>
+    <script src="move.js"></script>
   </head>
   <body>
     <canvas id="gameCanv" width="400px" height="400px"></canvas>
     <button onclick="newGame();" id="newGame">New Game</button>
     <button onclick="board.generateFenString();" id="generateFenString">Generate FEN string</button>
+    <button onclick="toggleLegalMoves();" id="legalMoves">Show legal moves</button>
+    <button onclick="board.unmakeMove();" id="legalMoves">Unmake Move</button>
 
     <img src="images/kwhite.png" id="kwhite" class="piece">
     <img src="images/kblack.png" id="kblack" class="piece">

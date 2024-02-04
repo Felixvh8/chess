@@ -2,6 +2,8 @@ class Board {
   constructor() {
     Board.PrecomputedMoveData();
     this.squares = new Array(64);
+    this.lastMove = {};
+    this.playedMoves = [];
 
     // Creates the board, i indicates squares from the left, j indicates squares from the top
     for (let j = 0; j < 8; j++) {
@@ -26,16 +28,16 @@ class Board {
 
         let squareIndex = (j * 8) + i;
 
-        this.NumSquaresToEdge[squareIndex] = {
+        this.NumSquaresToEdge[squareIndex] = [
           numNorth,
           numEast,
           numSouth,
           numWest,
-          numNorEas: Math.min(numNorth, numEast),
-          numSouEas: Math.min(numSouth, numEast),
-          numSouWes: Math.min(numSouth, numWest),
-          numNorEas: Math.min(numNorth, numWest)
-        };
+          Math.min(numNorth, numEast),
+          Math.min(numSouth, numEast),
+          Math.min(numSouth, numWest),
+          Math.min(numNorth, numWest)
+        ];
       }
     }
   }
@@ -47,6 +49,8 @@ class Board {
       ctx.fillStyle = (square.i + square.j) % 2 === 0 ? "#c2e1c2" : "#7dcd85";
       if (square.selected == true) {
         ctx.fillStyle = (square.i + square.j) % 2 === 0 ? "#d2f1d2" : "#9deda5";
+      } else if (square.legal == true) {
+        ctx.fillStyle = (square.i + square.j) % 2 === 0 ? "#ab746e" : "#bc857f";
       }
       ctx.fillRect(square.i * SQUARE_SIZE, square.j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
 
@@ -137,6 +141,7 @@ class Board {
   unselectSquares() {
     for (const square of this.squares) {
       square.selected = false;
+      square.legal = false;
     }
     selectedSquares = [];
   }
@@ -170,32 +175,104 @@ class Board {
     return result;
   }
 
-  makeMove(startingSquare, targetSquare) {
-    console.log(`Starting Square: ${startingSquare.i + 1}, ${8 - startingSquare.j}. Target Square: ${targetSquare.i + 1}, ${8 - targetSquare.j}.`)
-    // These functions check if the move is legal
-    console.log("Move passes antogony check: " + this.checkAntagony(startingSquare, targetSquare));
-    if (!this.checkAntagony(startingSquare, targetSquare)) return;
-    if (!this.checkPieceMovement) return;
+  makeMove(startSquare, targetSquare) {
+    console.log(`Starting Square: ${startSquare.i + 1}, ${8 - startSquare.j}. Target Square: ${targetSquare.i + 1}, ${8 - targetSquare.j}.`);
+    // Acts as a switch to see if the move is legal or en passant
+    let legalMove = false;
+    let isEnPassant = false;
+    let isPromotion = false;
+    let isCastle = false;
 
-    startingSquare.piece.hasMoved = true;
-    targetSquare.setPiece(startingSquare.piece);
-    startingSquare.unset();
+    for (const move of Move.Moves) {
+      if (startSquare.index != move.startSquare) continue;
+      if (targetSquare.index != move.targetSquare) continue;
+      legalMove = true;
+      if (startSquare.piece.type == Piece.Pawn) {
+        if (move.enPassant) isEnPassant = true;
+        if (move.promotion) isPromotion = true;
+      } else if (startSquare.piece.type == Piece.King) {
+        if (move.castle) isCastle = true;
+      }
+      break;
+    } 
 
-    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
-  }
+    if (legalMove) {
+      // Pieces involved for move logging
+      let startPiece = startSquare.piece;
+      let colourInverter = board.turn == Piece.White ? 1 : -1;
+      let takenPiece = isEnPassant ? this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter]: targetSquare.piece;
 
-  checkAntagony(startingSquare, targetSquare) {
-    if (startingSquare.piece.colour == targetSquare.piece.colour) {
-      return false;
+      startSquare.piece.hasMoved = true;
+      targetSquare.setPiece(startSquare.piece);
+      startSquare.unset();
+
+      if (targetSquare.piece.type == Piece.Pawn) {
+        if (isEnPassant) {
+          this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter].unset();
+        } else if (isPromotion) {
+          let newPiece = -1;
+
+          while (newPiece != 'q' && newPiece != 'b' && newPiece != 'n' && newPiece != 'r' && newPiece != null && newPiece != "") {
+            newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \n The default piece is a queen. \nIf that piece is a Knight, type 'n'");
+          }
+
+          if (newPiece == null || newPiece == "") newPiece = 'q';
+
+          this.promotion(targetSquare,  newPiece);
+        }
+      } else if (targetSquare.piece.type == Piece.King && (targetSquare.index == startSquare.index - 2 || targetSquare.index == startSquare.index + 2)) {
+        this.castle(targetSquare);
+      }
+
+      this.lastMove = {
+        startSquare: startSquare.index, 
+        targetSquare: targetSquare.index,
+        pieceMoved: startPiece,
+        takenPiece: takenPiece,
+        isEnPassant: isEnPassant,
+        isPromotion: isPromotion,
+        isCastle: isCastle
+      };
+      this.playedMoves.push(this.lastMove);
+
+      this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+      Move.GenerateMoves();
     }
-    return true;
   }
 
-  checkPieceMovement(startingSquare, targetSquare) {
-    switch (startingSquare.piece.type) {
-      case 1:
-        if (targetSquare.index == startingSquare.index)
-        return true;
+  // Reverses a move
+  unmakeMove() {
+    // Error checking if no moves have been played
+    if (this.playedMoves.length == 0 || !this.lastMove.hasOwnProperty("startSquare")) return;
+
+    // Set start square piece to target square piece
+    this.squares[this.lastMove.startSquare].piece = this.lastMove.pieceMoved;
+    
+    // set target square piece to taken piece
+    this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
+
+    // alternate whos turn it is
+    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+
+    // remove move from played move list and set last move to previous move
+    this.playedMoves.pop();
+    this.lastMove = this.playedMoves.length == 0 ? {} : this.playedMoves[this.playedMoves.length - 1];
+  }
+
+  promotion(targetSquare, input) {
+    if (input == null) return;
+    input = this.turn == Piece.White ? input.toUpperCase() : input.toLowerCase();
+
+    board.squares[targetSquare.index].setPiece(input);
+  }
+
+  castle(targetSquare) {
+    if (targetSquare.i == 2) {
+      this.squares[targetSquare.index + Move.DirectionOffsets[1]].piece = this.squares[targetSquare.index + Move.DirectionOffsets[3] * 2].piece;
+      this.squares[targetSquare.index + Move.DirectionOffsets[3] * 2].unset();
+    } else {
+      this.squares[targetSquare.index + Move.DirectionOffsets[3]].piece = this.squares[targetSquare.index + Move.DirectionOffsets[1]].piece;
+      this.squares[targetSquare.index + Move.DirectionOffsets[1]].unset();
     }
   }
 }

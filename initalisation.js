@@ -4,6 +4,8 @@ let selectedSquares = [];
 let board;
 let canvas;
 let ctx;
+let DEVELOPER_FLAG = true;
+let showLegalMoves = DEVELOPER_FLAG ? true : false;
 
 // Called when the window fully loads, limit this
 // function to things that require use of the document space
@@ -14,17 +16,22 @@ window.onload = function() {
 
   board = new Board();
   board.setStartingPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ctx);
-
+  // Test starting positions
+  // board.setStartingPosition("r1bq2kr/pppp1ppp/2n2n2/2b1p3/2B1P2P/5N2/PPPP1PP1/R3K2R w KQkq - 0 1", ctx);
   board.displaySquares(ctx);
+  Move.GenerateMoves();
 
   document.addEventListener("click", (e) => {
-    //
-    // Check this function
-    //
     let square = board.getSelectedSquare(canvas, e);
 
     if (selectedSquares.length == 1 && selectedSquares[0].piece.colour != board.turn) {
       board.unselectSquares();
+    }
+
+    // Shows legal moves
+    if (showLegalMoves && selectedSquares.length == 1) {
+      Move.GenerateMovesForCurrentPiece(square.index);
+      board.displaySquares(ctx);
     }
 
     // Checks if the move is legal and makes the move if more than 1 square is selected
@@ -32,10 +39,13 @@ window.onload = function() {
       board.makeMove(selectedSquares[0], selectedSquares[1]);
       board.unselectSquares();
     }
-    console.log(square); //---------------------------------------
+    if (square) console.log(square); //---------------------------------------
 
+
+    //if (board.turn == Piece.Black) automate();
     // Redraws the board after each click
     board.displaySquares(ctx);
+
   });
 }
 
@@ -43,4 +53,15 @@ window.onload = function() {
 function newGame() {
   //if (window.confirm("Start a new game?")) window.location.reload();
   window.location.reload();
+}
+
+// Toggles the legal moves
+function toggleLegalMoves() {
+  showLegalMoves = showLegalMoves ? false : true;
+}
+
+function automate() {
+  Move.GenerateMoves();
+  let moveIndex = Math.floor(Move.Moves.length * Math.random());
+  board.makeMove(board.squares[Move.Moves[moveIndex].startingSquare], board.squares[Move.Moves[moveIndex].targetSquare]);
 }
