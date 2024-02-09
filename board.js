@@ -183,7 +183,7 @@ class Board {
     let isPromotion = false;
     let isCastle = false;
 
-    for (const move of Move.PseudoMoves) {
+    for (const move of Move.PseudoLegalMoves) {
       if (startSquare.index != move.startSquare) continue;
       if (targetSquare.index != move.targetSquare) continue;
       legalMove = true;

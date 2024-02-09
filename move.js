@@ -8,7 +8,7 @@ class Move {
   }
 
   static Moves;
-  static PseudoMoves;
+  static PseudoLegalMoves;
   static DirectionOffsets = [-8, 1, 8, -1, -7, 9, 7, -9];
   static KnightOffsets = [-15, -6, 10, 17, 15, 6, -10, -17];
   static PawnOffsets = [-8, -16, -7, -9];
@@ -16,7 +16,7 @@ class Move {
   // Finds and stores legal moves for the current position
   static GenerateMoves() {
     // console.log("Generating moves...")
-    this.PseudoMoves = new Array;
+    this.PseudoLegalMoves = new Array;
 
     for (let startSquare = 0; startSquare < 64; startSquare++) {
       let piece = board.squares[startSquare].piece.type;
@@ -34,7 +34,7 @@ class Move {
       }
     }
 
-    console.log(this.PseudoMoves);
+    return this.PseudoLegalMoves;
   }
 
   // Generates the moves for the queen, bishop and rook
@@ -55,7 +55,7 @@ class Move {
 
         let castle = false;
         if (piece == Piece.King && i == 1) castle = true;
-        this.PseudoMoves.push(new Move(startSquare, targetSquare, false, false, castle));
+        this.PseudoLegalMoves.push(new Move(startSquare, targetSquare, false, false, castle));
 
         // Skips to the next directions if there is a opposite coloured piece on the target square
         if (!board.squares[targetSquare].empty) break;
@@ -96,7 +96,7 @@ class Move {
       if (startSquareObj.i + 2 >= targetSquareObj.i && startSquareObj.i - 2 <= targetSquareObj.i && startSquareObj.j + 2 >= targetSquareObj.j && startSquareObj.j - 2 <= targetSquareObj.j) {
         // Adds the move to the possible moves list
         if (showLegalMoves && show) targetSquareObj.legal = true;
-        this.PseudoMoves.push(new Move(startSquare, targetSquare));
+        this.PseudoLegalMoves.push(new Move(startSquare, targetSquare));
       }
     }
   }
@@ -131,14 +131,14 @@ class Move {
       }
 
       if (showLegalMoves && show) board.squares[targetSquare].legal = true;
-      this.PseudoMoves.push(new Move(startSquare, targetSquare, isEnPassant, isPromotion));
+      this.PseudoLegalMoves.push(new Move(startSquare, targetSquare, isEnPassant, isPromotion));
     }
   }
 
   // Shows legal moves
   static GenerateMovesForCurrentPiece(startSquare) {
     if (DEVELOPER_FLAG) console.log("Generating moves for current piece...")
-    this.PseudoMoves = new Array;
+    this.PseudoLegalMoves = new Array;
 
     let piece = board.squares[startSquare].piece.type;
     if (piece == Piece.Pawn) {
@@ -150,7 +150,7 @@ class Move {
     }
 
 
-    if (DEVELOPER_FLAG) console.log(this.PseudoMoves);
+    if (DEVELOPER_FLAG) console.log(this.PseudoLegalMoves);
   }
 
   // Checks for checks lol
