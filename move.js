@@ -38,7 +38,7 @@ class Move {
   }
 
   // Generates the moves for the queen, bishop and rook
-  static GenerateSlidingMoves(startSquare, piece, show = false) {
+  static GenerateSlidingMoves(startSquare, piece) {
     let startIndex = piece == Piece.Bishop ? 4 : 0;
     let endIndex = piece == Piece.Rook ? 4 : 8;
 
@@ -51,14 +51,12 @@ class Move {
         // Stops the loop if the target square has a piece of the same colour
         if (pieceOnTarget.colour == board.turn) break;
 
-        if (showLegalMoves && show) board.squares[targetSquare].legal = true;
-
         let castle = false;
         if (piece == Piece.King && i == 1) castle = true;
         this.PseudoLegalMoves.push(new Move(startSquare, targetSquare, false, false, castle));
 
         // Skips to the next directions if there is a opposite coloured piece on the target square
-        if (!board.squares[targetSquare].empty) break;
+        if (pieceOnTarget.colour) break;
 
         // Breaks the loop if the piece is a king as it can only move 1 square in each direction
         if (piece == Piece.King) {
@@ -80,7 +78,7 @@ class Move {
   }
 
   // Knight Moves Obvi
-  static GenerateKnightMoves(startSquare, show = false) {
+  static GenerateKnightMoves(startSquare) {
     for (const int of this.KnightOffsets) {
       let targetSquare = startSquare + int;
       if (targetSquare > 63 || targetSquare < 0) continue;
@@ -93,13 +91,12 @@ class Move {
 
       if (startSquareObj.i + 2 >= targetSquareObj.i && startSquareObj.i - 2 <= targetSquareObj.i && startSquareObj.j + 2 >= targetSquareObj.j && startSquareObj.j - 2 <= targetSquareObj.j) {
         // Adds the move to the possible moves list
-        if (showLegalMoves && show) targetSquareObj.legal = true;
         this.PseudoLegalMoves.push(new Move(startSquare, targetSquare));
       }
     }
   }
 
-  static GeneratePawnMoves(startSquare, show = false) {
+  static GeneratePawnMoves(startSquare) {
     // Inverses the index offset for black pieces
     let colourInverter = board.turn == Piece.White ? 1 : -1;
     let isEnPassant = false;
@@ -128,34 +125,23 @@ class Move {
         isPromotion = true;
       }
 
-      if (showLegalMoves && show) board.squares[targetSquare].legal = true;
       this.PseudoLegalMoves.push(new Move(startSquare, targetSquare, isEnPassant, isPromotion));
     }
   }
 
   // Shows legal moves
   static GenerateMovesForCurrentPiece(startSquare) {
-    if (DEVELOPER_FLAG) console.log("Generating moves for current piece...")
-    this.PseudoLegalMoves = new Array;
+    for (const move of this.LegalMoves) {
+      if (move.startSquare != startSquare) continue;
 
-    let piece = board.squares[startSquare].piece.type;
-    if (piece == Piece.Pawn) {
-      this.GeneratePawnMoves(startSquare, true);
-    } else if (piece == Piece.Queen || piece == Piece.Bishop || piece == Piece.Rook || piece == Piece.King) {
-      this.GenerateSlidingMoves(startSquare, piece, true);
-    } else if (piece == Piece.Knight) {
-      this.GenerateKnightMoves(startSquare, true);
+      board.squares[move.targetSquare].legal = true;
     }
-
-
-    if (DEVELOPER_FLAG) console.log(this.PseudoLegalMoves);
   }
 
   // Checks for checks lol
   static GenerateLegalMoves() {
     // Generate all possible movements for pieces
     let pseudoMoves = this.GenerateMoves();
-    let check = false;
     this.LegalMoves = new Array;
 
     // for move in moves
