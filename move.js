@@ -103,8 +103,8 @@ class Move {
 
     for (let directionIndex = 0; directionIndex < this.PawnOffsets.length; directionIndex++) {
       let targetSquare = startSquare + (this.PawnOffsets[directionIndex] * colourInverter);
-
       if (targetSquare < 0 || targetSquare > 63) continue;
+
       if (board.squares[startSquare].index > 15 && board.squares[startSquare].index < 48 && directionIndex == 1) continue;
       if (directionIndex == 1 && board.squares[startSquare + this.PawnOffsets[0] * colourInverter].piece != 0) continue;
       if (startSquare % 8 == 0 && targetSquare % 8 > 3 || startSquare % 8 == 7 && targetSquare % 8 < 4) continue;
@@ -131,7 +131,7 @@ class Move {
 
   // Shows legal moves
   static GenerateMovesForCurrentPiece(startSquare) {
-    if (DEVELOPER_FLAG) console.log("Generating moves for current piece...")
+    if (DEVELOPER_FLAG) console.log("Generating moves for current piece...");
     this.Moves = new Array;
 
     let piece = board.squares[startSquare].piece.type;
