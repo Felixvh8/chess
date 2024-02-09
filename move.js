@@ -14,7 +14,7 @@ class Move {
 
   // Finds and stores legal moves for the current position
   static GenerateMoves() {
-    console.log("Generating moves...")
+    // console.log("Generating moves...")
     this.Moves = new Array;
 
     for (let startSquare = 0; startSquare < 64; startSquare++) {
@@ -75,6 +75,8 @@ class Move {
     }
   }
 
+  // Check if pseudo legal moves result in a check on your king
+
   // Knight Moves Obvi
   static GenerateKnightMoves(startSquare, show = false) {
     for (const int of this.KnightOffsets) {
@@ -131,7 +133,7 @@ class Move {
 
   // Shows legal moves
   static GenerateMovesForCurrentPiece(startSquare) {
-    if (DEVELOPER_FLAG) console.log("Generating moves for current piece...");
+    if (DEVELOPER_FLAG) console.log("Generating moves for current piece...")
     this.Moves = new Array;
 
     let piece = board.squares[startSquare].piece.type;
@@ -145,5 +147,17 @@ class Move {
 
 
     if (DEVELOPER_FLAG) console.log(this.Moves);
+  }
+
+  // Checks for checks lol
+  static GenerateLegalMoves() {
+    for (const move of this.Moves) {
+      this.TestMove(move.startSquare, move.targetSquare);
+    }
+  }
+
+  static TestMove(startSquare, targetSquare) {
+    makeMove(board.squares[startSquare], board.squares[targetSquare]);
+    this.GenerateMoves();
   }
 }
