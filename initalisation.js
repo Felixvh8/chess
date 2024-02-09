@@ -29,10 +29,10 @@ window.onload = function() {
     }
 
     // Shows legal moves
-    //if (showLegalMoves && selectedSquares.length == 1) {
-    //  Move.GenerateMovesForCurrentPiece(square.index);
-    //  board.displaySquares(ctx);
-    //}
+    if (showLegalMoves && selectedSquares.length == 1) {
+      Move.GenerateMovesForCurrentPiece(square.index);
+      board.displaySquares(ctx);
+    }
 
     // Checks if the move is legal and makes the move if more than 1 square is selected
     if (selectedSquares.length > 1) {

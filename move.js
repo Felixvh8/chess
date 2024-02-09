@@ -79,8 +79,6 @@ class Move {
     }
   }
 
-  // Check if pseudo legal moves result in a check on your king
-
   // Knight Moves Obvi
   static GenerateKnightMoves(startSquare, show = false) {
     for (const int of this.KnightOffsets) {

@@ -175,64 +175,6 @@ class Board {
     return result;
   }
 
-  /*
-  makeMove(startSquare, targetSquare) {
-    // Acts as a switch to see if the move is legal or en passant
-    let legalMove = false;
-    let isEnPassant = false;
-    let isPromotion = false;
-    let isCastle = false;
-
-    for (const move of Move.LegalMoves) {
-      if (startSquare.index != move.startSquare) continue;
-      if (targetSquare.index != move.targetSquare) continue;
-      legalMove = true;
-      if (startSquare.piece.type == Piece.Pawn) {
-        if (move.enPassant) isEnPassant = true;
-        if (move.promotion) isPromotion = true;
-      } else if (startSquare.piece.type == Piece.King) {
-        if (move.castle) isCastle = true;
-      }
-      break;
-    } 
-
-    if (legalMove) {
-      // Pieces involved for move logging
-      let pieceMoved = startSquare.piece;
-      let colourInverter = board.turn == Piece.White ? 1 : -1;
-      let takenPiece = isEnPassant ? this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter].piece : targetSquare.piece;
-
-      startSquare.piece.hasMoved = true;
-      targetSquare.setPiece(startSquare.piece);
-      startSquare.unset();
-
-      if (targetSquare.piece.type == Piece.Pawn) {
-        if (isEnPassant) {
-          this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter].unset();
-        } else if (isPromotion) {
-          this.promotion(targetSquare,  newPiece);
-        }
-      } else if (targetSquare.piece.type == Piece.King && (targetSquare.index == startSquare.index - 2 || targetSquare.index == startSquare.index + 2)) {
-        this.castle(targetSquare);
-      }
-
-      this.lastMove = {
-        startSquare: startSquare.index, 
-        targetSquare: targetSquare.index,
-        pieceMoved: pieceMoved,
-        takenPiece: takenPiece,
-        isEnPassant: isEnPassant,
-        isPromotion: isPromotion,
-        isCastle: isCastle
-      };
-      this.playedMoves.push(this.lastMove);
-
-      this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
-      Move.GenerateLegalMoves();
-    }
-  }
-  */
-
   makeMove(startSquare, targetSquare, moveList) {
     // Acts as a switch to see if the move is legal or en passant
     let legalMove = false;
