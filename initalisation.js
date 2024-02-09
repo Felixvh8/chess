@@ -19,7 +19,7 @@ window.onload = function() {
   // Test starting positions
   // board.setStartingPosition("r1bq2kr/pppp1ppp/2n2n2/2b1p3/2B1P2P/5N2/PPPP1PP1/R3K2R w KQkq - 0 1", ctx);
   board.displaySquares(ctx);
-  Move.GenerateMoves();
+  Move.GenerateLegalMoves();
 
   document.addEventListener("click", (e) => {
     let square = board.getSelectedSquare(canvas, e);
@@ -29,14 +29,14 @@ window.onload = function() {
     }
 
     // Shows legal moves
-    if (showLegalMoves && selectedSquares.length == 1) {
-      Move.GenerateMovesForCurrentPiece(square.index);
-      board.displaySquares(ctx);
-    }
+    //if (showLegalMoves && selectedSquares.length == 1) {
+    //  Move.GenerateMovesForCurrentPiece(square.index);
+    //  board.displaySquares(ctx);
+    //}
 
     // Checks if the move is legal and makes the move if more than 1 square is selected
     if (selectedSquares.length > 1) {
-      board.makeMove(selectedSquares[0], selectedSquares[1]);
+      board.makeMove(selectedSquares[0].index, selectedSquares[1].index, Move.LegalMoves);
       board.unselectSquares();
     }
     if (square) console.log(square); //---------------------------------------
@@ -46,6 +46,7 @@ window.onload = function() {
     // Redraws the board after each click
     board.displaySquares(ctx);
 
+    Move.GenerateLegalMoves();
   });
 }
 

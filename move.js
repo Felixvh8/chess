@@ -7,7 +7,7 @@ class Move {
     this.castle = castle;
   }
 
-  static Moves;
+  static LegalMoves;
   static PseudoLegalMoves;
   static DirectionOffsets = [-8, 1, 8, -1, -7, 9, 7, -9];
   static KnightOffsets = [-15, -6, 10, 17, 15, 6, -10, -17];
@@ -156,9 +156,39 @@ class Move {
   // Checks for checks lol
   static GenerateLegalMoves() {
     // Generate all possible movements for pieces
+    let pseudoMoves = this.GenerateMoves();
+    let check = false;
+    this.LegalMoves = new Array;
+
+    // for move in moves
+    for (const move of pseudoMoves) {
+      if (this.TestMove(move.startSquare, move.targetSquare, pseudoMoves)) this.LegalMoves.push(move);
+    }
+    
+
+    // Return new legal moves array
+    console.log(this.LegalMoves);
+    return this.LegalMoves;
   }
 
-  static TestMove(startSquare, targetSquare) {
+  static TestMove(startSquare, targetSquare, moveList) {
+    // Makes the move on the board
+    board.makeMove(startSquare, targetSquare, moveList);
 
+    // Generate the possible responses to our move
+    let opponentResponses = this.GenerateMoves();
+
+    for (const response of opponentResponses) {
+      // If king is attacking
+      if (board.squares[response.targetSquare].piece.type == Piece.King) {
+        // Returns board to the current position
+        board.unmakeMove();
+        return false;
+      }
+    }
+
+    // Returns board to the current position
+    board.unmakeMove();
+    return true;
   }
 }

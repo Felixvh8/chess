@@ -175,15 +175,15 @@ class Board {
     return result;
   }
 
+  /*
   makeMove(startSquare, targetSquare) {
-    console.log(`Starting Square: ${startSquare.i + 1}, ${8 - startSquare.j}. Target Square: ${targetSquare.i + 1}, ${8 - targetSquare.j}.`);
     // Acts as a switch to see if the move is legal or en passant
     let legalMove = false;
     let isEnPassant = false;
     let isPromotion = false;
     let isCastle = false;
 
-    for (const move of Move.PseudoLegalMoves) {
+    for (const move of Move.LegalMoves) {
       if (startSquare.index != move.startSquare) continue;
       if (targetSquare.index != move.targetSquare) continue;
       legalMove = true;
@@ -228,15 +228,65 @@ class Board {
       this.playedMoves.push(this.lastMove);
 
       this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
-      Move.GenerateMoves();
+      Move.GenerateLegalMoves();
     }
   }
-
-  /*
-  makeMove(startSquare, targetSquare) {
-    
-  }
   */
+
+  makeMove(startSquare, targetSquare, moveList) {
+    // Acts as a switch to see if the move is legal or en passant
+    let legalMove = false;
+    let isEnPassant = false;
+    let isPromotion = false;
+    let isCastle = false;
+
+    for (const move of moveList) {
+      if (startSquare != move.startSquare) continue;
+      if (targetSquare != move.targetSquare) continue;
+      legalMove = true;
+      if (this.squares[startSquare].piece.type == Piece.Pawn) {
+        if (move.enPassant) isEnPassant = true;
+        if (move.promotion) isPromotion = true;
+      } else if (this.squares[startSquare].piece.type == Piece.King) {
+        if (move.castle) isCastle = true;
+      }
+      break;
+    } 
+
+    if (legalMove) {
+      // Pieces involved for move logging
+      let pieceMoved = this.squares[startSquare].piece;
+      let colourInverter = board.turn == Piece.White ? 1 : -1;
+      let takenPiece = isEnPassant ? this.squares[targetSquare - Move.PawnOffsets[0] * colourInverter].piece : this.squares[targetSquare].piece;
+
+      this.squares[startSquare].piece.hasMoved = true;
+      this.squares[targetSquare].setPiece(this.squares[startSquare].piece);
+      this.squares[startSquare].unset();
+
+      if (this.squares[targetSquare].piece.type == Piece.Pawn) {
+        if (isEnPassant) {
+          this.squares[targetSquare - Move.PawnOffsets[0] * colourInverter].unset();
+        } else if (isPromotion) {
+          this.promotion(targetSquare,  newPiece);
+        }
+      } else if (this.squares[targetSquare].piece.type == Piece.King && (targetSquare == startSquare - 2 || targetSquare == startSquare + 2)) {
+        this.castle(targetSquare);
+      }
+
+      this.lastMove = {
+        startSquare: startSquare, 
+        targetSquare: targetSquare,
+        pieceMoved: pieceMoved,
+        takenPiece: takenPiece,
+        isEnPassant: isEnPassant,
+        isPromotion: isPromotion,
+        isCastle: isCastle
+      };
+      this.playedMoves.push(this.lastMove);
+
+      this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+    }
+  }
 
   // Reverses a move
   unmakeMove() {
@@ -284,16 +334,16 @@ class Board {
     if (newPiece == null || newPiece == "") newPiece = 'q';
 
     newPiece = this.turn == Piece.White ? input.toUpperCase() : input.toLowerCase();
-    board.squares[targetSquare.index].setPiece(input);
+    board.squares[targetSquare].setPiece(input);
   }
 
   castle(targetSquare) {
     if (targetSquare.i == 2) {
-      this.squares[targetSquare.index + Move.DirectionOffsets[1]].piece = this.squares[targetSquare.index + Move.DirectionOffsets[3] * 2].piece;
-      this.squares[targetSquare.index + Move.DirectionOffsets[3] * 2].unset();
+      this.squares[targetSquare + Move.DirectionOffsets[1]].piece = this.squares[targetSquare + Move.DirectionOffsets[3] * 2].piece;
+      this.squares[targetSquare + Move.DirectionOffsets[3] * 2].unset();
     } else {
-      this.squares[targetSquare.index + Move.DirectionOffsets[3]].piece = this.squares[targetSquare.index + Move.DirectionOffsets[1]].piece;
-      this.squares[targetSquare.index + Move.DirectionOffsets[1]].unset();
+      this.squares[targetSquare + Move.DirectionOffsets[3]].piece = this.squares[targetSquare + Move.DirectionOffsets[1]].piece;
+      this.squares[targetSquare + Move.DirectionOffsets[1]].unset();
     }
   }
 }
