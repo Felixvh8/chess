@@ -1,9 +1,10 @@
 class Move {
-  constructor(startSquare, targetSquare, enPassant = false, isPromotion = false) {
+  constructor(startSquare, targetSquare, enPassant = false, isPromotion = false, castle = false) {
     this.startSquare = startSquare;
     this.targetSquare = targetSquare;
     this.enPassant = enPassant;
     this.promotion = isPromotion;
+    this.castle = castle;
   }
 
   static Moves;
@@ -15,7 +16,7 @@ class Move {
   // Finds and stores legal moves for the current position
   static GenerateMoves() {
     // console.log("Generating moves...")
-    this.Moves = new Array;
+    this.PseudoMoves = new Array;
 
     for (let startSquare = 0; startSquare < 64; startSquare++) {
       let piece = board.squares[startSquare].piece.type;
@@ -33,7 +34,7 @@ class Move {
       }
     }
 
-    console.log(this.Moves);
+    console.log(this.PseudoMoves);
   }
 
   // Generates the moves for the queen, bishop and rook
@@ -51,7 +52,10 @@ class Move {
         if (pieceOnTarget.colour == board.turn) break;
 
         if (showLegalMoves && show) board.squares[targetSquare].legal = true;
-        this.Moves.push(new Move(startSquare, targetSquare));
+
+        let castle = false;
+        if (piece == Piece.King && i == 1) castle = true;
+        this.PseudoMoves.push(new Move(startSquare, targetSquare, false, false, castle));
 
         // Skips to the next directions if there is a opposite coloured piece on the target square
         if (!board.squares[targetSquare].empty) break;
@@ -92,7 +96,7 @@ class Move {
       if (startSquareObj.i + 2 >= targetSquareObj.i && startSquareObj.i - 2 <= targetSquareObj.i && startSquareObj.j + 2 >= targetSquareObj.j && startSquareObj.j - 2 <= targetSquareObj.j) {
         // Adds the move to the possible moves list
         if (showLegalMoves && show) targetSquareObj.legal = true;
-        this.Moves.push(new Move(startSquare, targetSquare));
+        this.PseudoMoves.push(new Move(startSquare, targetSquare));
       }
     }
   }
@@ -127,14 +131,14 @@ class Move {
       }
 
       if (showLegalMoves && show) board.squares[targetSquare].legal = true;
-      this.Moves.push(new Move(startSquare, targetSquare, isEnPassant, isPromotion));
+      this.PseudoMoves.push(new Move(startSquare, targetSquare, isEnPassant, isPromotion));
     }
   }
 
   // Shows legal moves
   static GenerateMovesForCurrentPiece(startSquare) {
     if (DEVELOPER_FLAG) console.log("Generating moves for current piece...")
-    this.Moves = new Array;
+    this.PseudoMoves = new Array;
 
     let piece = board.squares[startSquare].piece.type;
     if (piece == Piece.Pawn) {
@@ -146,18 +150,15 @@ class Move {
     }
 
 
-    if (DEVELOPER_FLAG) console.log(this.Moves);
+    if (DEVELOPER_FLAG) console.log(this.PseudoMoves);
   }
 
   // Checks for checks lol
   static GenerateLegalMoves() {
-    for (const move of this.Moves) {
-      this.TestMove(move.startSquare, move.targetSquare);
-    }
+    // Generate all possible movements for pieces
   }
 
   static TestMove(startSquare, targetSquare) {
-    makeMove(board.squares[startSquare], board.squares[targetSquare]);
-    this.GenerateMoves();
+
   }
 }

@@ -183,7 +183,7 @@ class Board {
     let isPromotion = false;
     let isCastle = false;
 
-    for (const move of Move.Moves) {
+    for (const move of Move.PseudoMoves) {
       if (startSquare.index != move.startSquare) continue;
       if (targetSquare.index != move.targetSquare) continue;
       legalMove = true;
@@ -198,9 +198,9 @@ class Board {
 
     if (legalMove) {
       // Pieces involved for move logging
-      let startPiece = startSquare.piece;
+      let pieceMoved = startSquare.piece;
       let colourInverter = board.turn == Piece.White ? 1 : -1;
-      let takenPiece = isEnPassant ? this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter]: targetSquare.piece;
+      let takenPiece = isEnPassant ? this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter].piece : targetSquare.piece;
 
       startSquare.piece.hasMoved = true;
       targetSquare.setPiece(startSquare.piece);
@@ -210,14 +210,6 @@ class Board {
         if (isEnPassant) {
           this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter].unset();
         } else if (isPromotion) {
-          let newPiece = -1;
-
-          while (newPiece != 'q' && newPiece != 'b' && newPiece != 'n' && newPiece != 'r' && newPiece != null && newPiece != "") {
-            newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \n The default piece is a queen. \nIf that piece is a Knight, type 'n'");
-          }
-
-          if (newPiece == null || newPiece == "") newPiece = 'q';
-
           this.promotion(targetSquare,  newPiece);
         }
       } else if (targetSquare.piece.type == Piece.King && (targetSquare.index == startSquare.index - 2 || targetSquare.index == startSquare.index + 2)) {
@@ -227,7 +219,7 @@ class Board {
       this.lastMove = {
         startSquare: startSquare.index, 
         targetSquare: targetSquare.index,
-        pieceMoved: startPiece,
+        pieceMoved: pieceMoved,
         takenPiece: takenPiece,
         isEnPassant: isEnPassant,
         isPromotion: isPromotion,
@@ -240,29 +232,58 @@ class Board {
     }
   }
 
+  /*
+  makeMove(startSquare, targetSquare) {
+    
+  }
+  */
+
   // Reverses a move
   unmakeMove() {
     // Error checking if no moves have been played
     if (this.playedMoves.length == 0 || !this.lastMove.hasOwnProperty("startSquare")) return;
+    
+    // Set target square (or en passant square) piece to taken piece
+    if (!this.lastMove.isEnPassant) {
+      this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
+      this.squares[this.lastMove.targetSquare].empty = this.squares[this.lastMove.targetSquare].piece == 0 ? true : false;
+    } else {
+      let colourInverter = this.turn === Piece.White ? 1 : -1;
+      this.squares[this.lastMove.targetSquare - Move.PawnOffsets[0] * colourInverter].piece = this.lastMove.takenPiece;
+    }
+
+    // Alternate whos turn it is
+    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+
+    // Check for castling
+    if (this.lastMove.isCastle) {
+      // Move rook left 3 or right 2
+      let startRookSquare = this.squares[this.lastMove.targetSquare].i == 2 ? this.lastMove.targetSquare - 2 : this.lastMove.targetSquare + 1;
+      let currentRookSquare = this.squares[this.lastMove.targetSquare].i == 2 ? this.lastMove.targetSquare + 1 : this.lastMove.targetSquare - 1;
+
+      this.squares[startRookSquare].piece = this.squares[currentRookSquare].piece;
+      this.squares[currentRookSquare].unset();
+      this.lastMove.pieceMoved.hasMoved = false;
+    }
 
     // Set start square piece to target square piece
     this.squares[this.lastMove.startSquare].piece = this.lastMove.pieceMoved;
-    
-    // set target square piece to taken piece
-    this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
 
-    // alternate whos turn it is
-    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
-
-    // remove move from played move list and set last move to previous move
+    // Remove move from played move list and set last move to previous move
     this.playedMoves.pop();
     this.lastMove = this.playedMoves.length == 0 ? {} : this.playedMoves[this.playedMoves.length - 1];
   }
 
-  promotion(targetSquare, input) {
-    if (input == null) return;
-    input = this.turn == Piece.White ? input.toUpperCase() : input.toLowerCase();
+  promotion(targetSquare) {
+    let newPiece = -1;
 
+    while (newPiece != 'q' && newPiece != 'b' && newPiece != 'n' && newPiece != 'r' && newPiece != null && newPiece != "") {
+      newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \nThe default piece is a queen. \nIf that piece is a Knight, type 'n'");
+    }
+
+    if (newPiece == null || newPiece == "") newPiece = 'q';
+
+    newPiece = this.turn == Piece.White ? input.toUpperCase() : input.toLowerCase();
     board.squares[targetSquare.index].setPiece(input);
   }
 
