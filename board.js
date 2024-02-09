@@ -129,7 +129,7 @@ class Board {
         if (emptySquares != 0) fen += emptySquares;
         emptySquares = 0;
         fen += Piece.pieceToChar(square.piece.type, square.piece.colour);
-        if (square.i == 7 && square.j != 7) fen += "/"
+        if (square.i == 7 && square.j != 7) fen += "/";
       }
     }
 
