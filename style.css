@@ -1,3 +1,25 @@
+canvas {
+  margin: 10px;
+}
+
+button {
+  width: 150px;
+  margin-bottom: 10px;
+  margin-top: 0px;
+}
+
+#main {
+  position: absolute;
+}
+
+#functionalityButtons {
+  padding: 0px;
+  position: absolute;
+  left: 430px;
+  top: 20px;
+  width: 170px;
+}
+
 .piece {
   display: none;
 }

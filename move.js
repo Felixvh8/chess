@@ -14,7 +14,7 @@ class Move {
 
   // Finds and stores legal moves for the current position
   static GenerateMoves() {
-    console.log("Generating moves...")
+    // console.log("Generating moves...")
     this.Moves = new Array;
 
     for (let startSquare = 0; startSquare < 64; startSquare++) {
@@ -75,6 +75,8 @@ class Move {
     }
   }
 
+  // Check if pseudo legal moves result in a check on your king
+
   // Knight Moves Obvi
   static GenerateKnightMoves(startSquare, show = false) {
     for (const int of this.KnightOffsets) {
@@ -103,8 +105,8 @@ class Move {
 
     for (let directionIndex = 0; directionIndex < this.PawnOffsets.length; directionIndex++) {
       let targetSquare = startSquare + (this.PawnOffsets[directionIndex] * colourInverter);
-
       if (targetSquare < 0 || targetSquare > 63) continue;
+
       if (board.squares[startSquare].index > 15 && board.squares[startSquare].index < 48 && directionIndex == 1) continue;
       if (directionIndex == 1 && board.squares[startSquare + this.PawnOffsets[0] * colourInverter].piece != 0) continue;
       if (startSquare % 8 == 0 && targetSquare % 8 > 3 || startSquare % 8 == 7 && targetSquare % 8 < 4) continue;
@@ -145,5 +147,17 @@ class Move {
 
 
     if (DEVELOPER_FLAG) console.log(this.Moves);
+  }
+
+  // Checks for checks lol
+  static GenerateLegalMoves() {
+    for (const move of this.Moves) {
+      this.TestMove(move.startSquare, move.targetSquare);
+    }
+  }
+
+  static TestMove(startSquare, targetSquare) {
+    makeMove(board.squares[startSquare], board.squares[targetSquare]);
+    this.GenerateMoves();
   }
 }
