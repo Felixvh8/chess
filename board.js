@@ -115,9 +115,9 @@ class Board {
     let fen = "";
     let emptySquares = 0;
 
+    // Sets the absolute position
     for (const square of this.squares) {
-
-      if (square.empty) {
+      if (!square.piece.type) {
         emptySquares++;
 
         if (square.i == 7) {
@@ -133,8 +133,38 @@ class Board {
       }
     }
 
-    fen += this.turn == Piece.White ? " w" : " b";
+    // Sets who starts
+    fen += this.turn == Piece.White ? " w " : " b ";
+
+    // Sets castling availability
+    let whiteKing = this.squares[60];
+    let blackKing = this.squares[4];
+    if (whiteKing.piece.type == Piece.King && whiteKing.piece.moveCount == 0) {
+      if (this.squares[63].piece.type == Piece.Rook && this.squares[63].piece.moveCount == 0 && this.squares[63].piece.colour == Piece.White) {
+        fen += "K";
+      }
+      if (this.squares[56].piece.type == Piece.Rook && this.squares[56].piece.moveCount == 0 && this.squares[56].piece.colour == Piece.White) {
+        fen += "Q";
+      }
+    }
+    if (blackKing.piece.type == Piece.King && blackKing.piece.moveCount == 0) {
+      if (this.squares[7].piece.type == Piece.Rook && this.squares[7].piece.moveCount == 0 && this.squares[7].piece.colour == Piece.Black) {
+        fen += "k";
+      }
+      if (this.squares[0].piece.type == Piece.Rook && this.squares[0].piece.moveCount == 0 && this.squares[0].piece.colour == Piece.Black) {
+        fen += "q";
+      }
+    }
+    if (fen[fen.length - 1] == " ") {
+      fen += "- "
+    }
+
     console.log(fen);
+  }
+
+  // Alternates the game turn, because it is code that has been written a lot
+  alternateTurn() {
+    this.turn = this.turn === Piece.White ? Piece.Black : Piece.White;
   }
 
   // Unselects every square
@@ -226,7 +256,7 @@ class Board {
       };
       this.playedMoves.push(this.lastMove);
 
-      this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+      this.alternateTurn();
     }
   }
 
@@ -240,12 +270,13 @@ class Board {
       this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
       this.squares[this.lastMove.targetSquare].empty = this.squares[this.lastMove.targetSquare].piece == 0 ? true : false;
     } else {
-      let colourInverter = this.turn === Piece.White ? 1 : -1;
+      let colourInverter = this.turn === Piece.White ? -1 : 1;
       this.squares[this.lastMove.targetSquare - Move.PawnOffsets[0] * colourInverter].piece = this.lastMove.takenPiece;
+      this.squares[this.lastMove.targetSquare].unset();
     }
 
     // Alternate whos turn it is and decrease the turn count for that piece
-    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+    this.alternateTurn();
     this.lastMove.pieceMoved.moveCount--;
 
     // Check for castling
@@ -290,8 +321,20 @@ class Board {
   }
 
   checkWinCondition() {
-    if (Move.LegalMoves.length == 0) {
-      alert("Stalemate! The games a draw!");
+    // Checks for legal moves
+    if (Move.LegalMoves.length != 0) return;
+
+    // Inverts turn to see if there is an attack on the king
+    this.alternateTurn();
+    Move.GenerateLegalMoves();
+    for (const move of Move.LegalMoves) {
+      if (this.squares[move.targetSquare].piece.type == Piece.King) {
+        let winner = this.turn == Piece.White ? "White" : "Black";
+        alert(winner + " wins! Great Game!");
+        return;
+      }
     }
+    
+    alert("Stalemate! The games a draw!");
   }
 }
