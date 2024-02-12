@@ -175,22 +175,21 @@ class Board {
     return result;
   }
 
-  makeMove(startSquare, targetSquare) {
-    console.log(`Starting Square: ${startSquare.i + 1}, ${8 - startSquare.j}. Target Square: ${targetSquare.i + 1}, ${8 - targetSquare.j}.`);
+  makeMove(startSquare, targetSquare, moveList) {
     // Acts as a switch to see if the move is legal or en passant
     let legalMove = false;
     let isEnPassant = false;
     let isPromotion = false;
     let isCastle = false;
 
-    for (const move of Move.Moves) {
-      if (startSquare.index != move.startSquare) continue;
-      if (targetSquare.index != move.targetSquare) continue;
+    for (const move of moveList) {
+      if (startSquare != move.startSquare) continue;
+      if (targetSquare != move.targetSquare) continue;
       legalMove = true;
-      if (startSquare.piece.type == Piece.Pawn) {
+      if (this.squares[startSquare].piece.type == Piece.Pawn) {
         if (move.enPassant) isEnPassant = true;
         if (move.promotion) isPromotion = true;
-      } else if (startSquare.piece.type == Piece.King) {
+      } else if (this.squares[startSquare].piece.type == Piece.King) {
         if (move.castle) isCastle = true;
       }
       break;
@@ -198,36 +197,28 @@ class Board {
 
     if (legalMove) {
       // Pieces involved for move logging
-      let startPiece = startSquare.piece;
+      let pieceMoved = this.squares[startSquare].piece;
       let colourInverter = board.turn == Piece.White ? 1 : -1;
-      let takenPiece = isEnPassant ? this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter]: targetSquare.piece;
+      let takenPiece = isEnPassant ? this.squares[targetSquare - Move.PawnOffsets[0] * colourInverter].piece : this.squares[targetSquare].piece;
 
-      startSquare.piece.hasMoved = true;
-      targetSquare.setPiece(startSquare.piece);
-      startSquare.unset();
+      pieceMoved.moveCount++;
+      this.squares[targetSquare].setPiece(this.squares[startSquare].piece);
+      this.squares[startSquare].unset();
 
-      if (targetSquare.piece.type == Piece.Pawn) {
+      if (this.squares[targetSquare].piece.type == Piece.Pawn) {
         if (isEnPassant) {
-          this.squares[targetSquare.index - Move.PawnOffsets[0] * colourInverter].unset();
+          this.squares[targetSquare - Move.PawnOffsets[0] * colourInverter].unset();
         } else if (isPromotion) {
-          let newPiece = -1;
-
-          while (newPiece != 'q' && newPiece != 'b' && newPiece != 'n' && newPiece != 'r' && newPiece != null && newPiece != "") {
-            newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \n The default piece is a queen. \nIf that piece is a Knight, type 'n'");
-          }
-
-          if (newPiece == null || newPiece == "") newPiece = 'q';
-
           this.promotion(targetSquare,  newPiece);
         }
-      } else if (targetSquare.piece.type == Piece.King && (targetSquare.index == startSquare.index - 2 || targetSquare.index == startSquare.index + 2)) {
+      } else if (this.squares[targetSquare].piece.type == Piece.King && (targetSquare == startSquare - 2 || targetSquare == startSquare + 2)) {
         this.castle(targetSquare);
       }
 
       this.lastMove = {
-        startSquare: startSquare.index, 
-        targetSquare: targetSquare.index,
-        pieceMoved: startPiece,
+        startSquare: startSquare, 
+        targetSquare: targetSquare,
+        pieceMoved: pieceMoved,
         takenPiece: takenPiece,
         isEnPassant: isEnPassant,
         isPromotion: isPromotion,
@@ -236,7 +227,6 @@ class Board {
       this.playedMoves.push(this.lastMove);
 
       this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
-      Move.GenerateMoves();
     }
   }
 
@@ -244,35 +234,64 @@ class Board {
   unmakeMove() {
     // Error checking if no moves have been played
     if (this.playedMoves.length == 0 || !this.lastMove.hasOwnProperty("startSquare")) return;
+    
+    // Set target square (or en passant square) piece to taken piece
+    if (!this.lastMove.isEnPassant) {
+      this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
+      this.squares[this.lastMove.targetSquare].empty = this.squares[this.lastMove.targetSquare].piece == 0 ? true : false;
+    } else {
+      let colourInverter = this.turn === Piece.White ? 1 : -1;
+      this.squares[this.lastMove.targetSquare - Move.PawnOffsets[0] * colourInverter].piece = this.lastMove.takenPiece;
+    }
+
+    // Alternate whos turn it is and decrease the turn count for that piece
+    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+    this.lastMove.pieceMoved.moveCount--;
+
+    // Check for castling
+    if (this.lastMove.isCastle) {
+      // Move rook left 3 or right 2
+      let startRookSquare = this.squares[this.lastMove.targetSquare].i == 2 ? this.lastMove.targetSquare - 2 : this.lastMove.targetSquare + 1;
+      let currentRookSquare = this.squares[this.lastMove.targetSquare].i == 2 ? this.lastMove.targetSquare + 1 : this.lastMove.targetSquare - 1;
+
+      this.squares[startRookSquare].piece = this.squares[currentRookSquare].piece;
+      this.squares[currentRookSquare].unset();
+    }
 
     // Set start square piece to target square piece
     this.squares[this.lastMove.startSquare].piece = this.lastMove.pieceMoved;
-    
-    // set target square piece to taken piece
-    this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
 
-    // alternate whos turn it is
-    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
-
-    // remove move from played move list and set last move to previous move
+    // Remove move from played move list and set last move to previous move
     this.playedMoves.pop();
     this.lastMove = this.playedMoves.length == 0 ? {} : this.playedMoves[this.playedMoves.length - 1];
   }
 
-  promotion(targetSquare, input) {
-    if (input == null) return;
-    input = this.turn == Piece.White ? input.toUpperCase() : input.toLowerCase();
+  promotion(targetSquare) {
+    let newPiece = -1;
 
-    board.squares[targetSquare.index].setPiece(input);
+    while (newPiece != 'q' && newPiece != 'b' && newPiece != 'n' && newPiece != 'r' && newPiece != null && newPiece != "") {
+      newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \nThe default piece is a queen. \nIf that piece is a Knight, type 'n'");
+    }
+
+    if (newPiece == null || newPiece == "") newPiece = 'q';
+
+    newPiece = this.turn == Piece.White ? input.toUpperCase() : input.toLowerCase();
+    board.squares[targetSquare].setPiece(input);
   }
 
   castle(targetSquare) {
     if (targetSquare.i == 2) {
-      this.squares[targetSquare.index + Move.DirectionOffsets[1]].piece = this.squares[targetSquare.index + Move.DirectionOffsets[3] * 2].piece;
-      this.squares[targetSquare.index + Move.DirectionOffsets[3] * 2].unset();
+      this.squares[targetSquare + Move.DirectionOffsets[1]].piece = this.squares[targetSquare + Move.DirectionOffsets[3] * 2].piece;
+      this.squares[targetSquare + Move.DirectionOffsets[3] * 2].unset();
     } else {
-      this.squares[targetSquare.index + Move.DirectionOffsets[3]].piece = this.squares[targetSquare.index + Move.DirectionOffsets[1]].piece;
-      this.squares[targetSquare.index + Move.DirectionOffsets[1]].unset();
+      this.squares[targetSquare + Move.DirectionOffsets[3]].piece = this.squares[targetSquare + Move.DirectionOffsets[1]].piece;
+      this.squares[targetSquare + Move.DirectionOffsets[1]].unset();
+    }
+  }
+
+  checkWinCondition() {
+    if (Move.LegalMoves.length == 0) {
+      alert("Stalemate! The games a draw!");
     }
   }
 }

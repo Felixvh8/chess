@@ -1,13 +1,14 @@
 class Move {
-  constructor(startSquare, targetSquare, enPassant = false, isPromotion = false) {
+  constructor(startSquare, targetSquare, enPassant = false, isPromotion = false, castle = false) {
     this.startSquare = startSquare;
     this.targetSquare = targetSquare;
     this.enPassant = enPassant;
     this.promotion = isPromotion;
+    this.castle = castle;
   }
 
-  static Moves;
-  static PseudoMoves;
+  static LegalMoves;
+  static PseudoLegalMoves;
   static DirectionOffsets = [-8, 1, 8, -1, -7, 9, 7, -9];
   static KnightOffsets = [-15, -6, 10, 17, 15, 6, -10, -17];
   static PawnOffsets = [-8, -16, -7, -9];
@@ -15,7 +16,7 @@ class Move {
   // Finds and stores legal moves for the current position
   static GenerateMoves() {
     // console.log("Generating moves...")
-    this.Moves = new Array;
+    this.PseudoLegalMoves = new Array;
 
     for (let startSquare = 0; startSquare < 64; startSquare++) {
       let piece = board.squares[startSquare].piece.type;
@@ -33,11 +34,11 @@ class Move {
       }
     }
 
-    console.log(this.Moves);
+    return this.PseudoLegalMoves;
   }
 
   // Generates the moves for the queen, bishop and rook
-  static GenerateSlidingMoves(startSquare, piece, show = false) {
+  static GenerateSlidingMoves(startSquare, piece) {
     let startIndex = piece == Piece.Bishop ? 4 : 0;
     let endIndex = piece == Piece.Rook ? 4 : 8;
 
@@ -50,19 +51,21 @@ class Move {
         // Stops the loop if the target square has a piece of the same colour
         if (pieceOnTarget.colour == board.turn) break;
 
-        if (showLegalMoves && show) board.squares[targetSquare].legal = true;
-        this.Moves.push(new Move(startSquare, targetSquare));
+        let castle = false;
+        if (piece == Piece.King && i == 1) castle = true;
+        this.PseudoLegalMoves.push(new Move(startSquare, targetSquare, false, false, castle));
 
         // Skips to the next directions if there is a opposite coloured piece on the target square
-        if (!board.squares[targetSquare].empty) break;
+        if (pieceOnTarget.type) break;
 
         // Breaks the loop if the piece is a king as it can only move 1 square in each direction
         if (piece == Piece.King) {
-          if (board.squares[startSquare].piece.hasMoved) break;
+          if (board.squares[startSquare].piece.moveCount != 0) break;
           if (directionIndex == 1 || directionIndex == 3) {
             if (i == 1) break;
             let gapToRook = directionIndex == 1 ? 3 : 4;
             let rookSquare = board.squares[startSquare + this.DirectionOffsets[directionIndex] * gapToRook];
+            if (rookSquare.piece.moveCount != 0) break;
             if (rookSquare.piece == 0 || rookSquare.piece.type != Piece.Rook || rookSquare.piece.colour != board.turn) break;
             for (let j = 1; j < gapToRook; j++) {
               if (!board.squares[startSquare + this.DirectionOffsets[directionIndex] * j].empty) break outerloop;
@@ -75,10 +78,8 @@ class Move {
     }
   }
 
-  // Check if pseudo legal moves result in a check on your king
-
   // Knight Moves Obvi
-  static GenerateKnightMoves(startSquare, show = false) {
+  static GenerateKnightMoves(startSquare) {
     for (const int of this.KnightOffsets) {
       let targetSquare = startSquare + int;
       if (targetSquare > 63 || targetSquare < 0) continue;
@@ -91,13 +92,12 @@ class Move {
 
       if (startSquareObj.i + 2 >= targetSquareObj.i && startSquareObj.i - 2 <= targetSquareObj.i && startSquareObj.j + 2 >= targetSquareObj.j && startSquareObj.j - 2 <= targetSquareObj.j) {
         // Adds the move to the possible moves list
-        if (showLegalMoves && show) targetSquareObj.legal = true;
-        this.Moves.push(new Move(startSquare, targetSquare));
+        this.PseudoLegalMoves.push(new Move(startSquare, targetSquare));
       }
     }
   }
 
-  static GeneratePawnMoves(startSquare, show = false) {
+  static GeneratePawnMoves(startSquare) {
     // Inverses the index offset for black pieces
     let colourInverter = board.turn == Piece.White ? 1 : -1;
     let isEnPassant = false;
@@ -126,38 +126,54 @@ class Move {
         isPromotion = true;
       }
 
-      if (showLegalMoves && show) board.squares[targetSquare].legal = true;
-      this.Moves.push(new Move(startSquare, targetSquare, isEnPassant, isPromotion));
+      this.PseudoLegalMoves.push(new Move(startSquare, targetSquare, isEnPassant, isPromotion));
     }
   }
 
   // Shows legal moves
   static GenerateMovesForCurrentPiece(startSquare) {
-    if (DEVELOPER_FLAG) console.log("Generating moves for current piece...")
-    this.Moves = new Array;
+    for (const move of this.LegalMoves) {
+      if (move.startSquare != startSquare) continue;
 
-    let piece = board.squares[startSquare].piece.type;
-    if (piece == Piece.Pawn) {
-      this.GeneratePawnMoves(startSquare, true);
-    } else if (piece == Piece.Queen || piece == Piece.Bishop || piece == Piece.Rook || piece == Piece.King) {
-      this.GenerateSlidingMoves(startSquare, piece, true);
-    } else if (piece == Piece.Knight) {
-      this.GenerateKnightMoves(startSquare, true);
+      board.squares[move.targetSquare].legal = true;
     }
-
-
-    if (DEVELOPER_FLAG) console.log(this.Moves);
   }
 
   // Checks for checks lol
   static GenerateLegalMoves() {
-    for (const move of this.Moves) {
-      this.TestMove(move.startSquare, move.targetSquare);
+    // Generate all possible movements for pieces
+    let pseudoMoves = this.GenerateMoves();
+    this.LegalMoves = new Array;
+
+    // for move in moves
+    for (const move of pseudoMoves) {
+      if (this.TestMove(move.startSquare, move.targetSquare, pseudoMoves)) this.LegalMoves.push(move);
     }
+    
+
+    // Return new legal moves array
+    console.log(this.LegalMoves);
+    return this.LegalMoves;
   }
 
-  static TestMove(startSquare, targetSquare) {
-    makeMove(board.squares[startSquare], board.squares[targetSquare]);
-    this.GenerateMoves();
+  static TestMove(startSquare, targetSquare, moveList) {
+    // Makes the move on the board
+    board.makeMove(startSquare, targetSquare, moveList);
+
+    // Generate the possible responses to our move
+    let opponentResponses = this.GenerateMoves();
+
+    for (const response of opponentResponses) {
+      // If king is attacking
+      if (board.squares[response.targetSquare].piece.type == Piece.King) {
+        // Returns board to the current position
+        board.unmakeMove();
+        return false;
+      }
+    }
+
+    // Returns board to the current position
+    board.unmakeMove();
+    return true;
   }
 }

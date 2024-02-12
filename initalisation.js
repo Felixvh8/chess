@@ -19,7 +19,7 @@ window.onload = function() {
   // Test starting positions
   // board.setStartingPosition("r1bq2kr/pppp1ppp/2n2n2/2b1p3/2B1P2P/5N2/PPPP1PP1/R3K2R w KQkq - 0 1", ctx);
   board.displaySquares(ctx);
-  Move.GenerateMoves();
+  Move.GenerateLegalMoves();
 
   document.addEventListener("click", (e) => {
     let square = board.getSelectedSquare(canvas, e);
@@ -36,7 +36,7 @@ window.onload = function() {
 
     // Checks if the move is legal and makes the move if more than 1 square is selected
     if (selectedSquares.length > 1) {
-      board.makeMove(selectedSquares[0], selectedSquares[1]);
+      board.makeMove(selectedSquares[0].index, selectedSquares[1].index, Move.LegalMoves);
       board.unselectSquares();
     }
     if (square) console.log(square); //---------------------------------------
@@ -46,6 +46,8 @@ window.onload = function() {
     // Redraws the board after each click
     board.displaySquares(ctx);
 
+    Move.GenerateLegalMoves();
+    board.checkWinCondition();
   });
 }
 
@@ -62,6 +64,6 @@ function toggleLegalMoves() {
 
 function automate() {
   Move.GenerateMoves();
-  let moveIndex = Math.floor(Move.Moves.length * Math.random());
-  board.makeMove(board.squares[Move.Moves[moveIndex].startingSquare], board.squares[Move.Moves[moveIndex].targetSquare]);
+  let moveIndex = Math.floor(Move.PseudoMoves.length * Math.random());
+  board.makeMove(board.squares[Move.PseudoMoves[moveIndex].startingSquare], board.squares[Move.PseudoMoves[moveIndex].targetSquare]);
 }
