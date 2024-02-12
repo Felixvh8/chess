@@ -56,7 +56,7 @@ class Move {
         this.PseudoLegalMoves.push(new Move(startSquare, targetSquare, false, false, castle));
 
         // Skips to the next directions if there is a opposite coloured piece on the target square
-        if (pieceOnTarget.colour) break;
+        if (pieceOnTarget.type) break;
 
         // Breaks the loop if the piece is a king as it can only move 1 square in each direction
         if (piece == Piece.King) {
