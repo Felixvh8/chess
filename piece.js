@@ -2,7 +2,7 @@ class Piece {
   constructor(colour, type) {
     this.colour = colour;
     this.type = type;
-    this.hasMoved = false;
+    this.moveCount = 0;
   }
 
   // Piece dictionary, so the program can store the piece type as a integer to save space and time

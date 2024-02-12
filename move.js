@@ -60,11 +60,12 @@ class Move {
 
         // Breaks the loop if the piece is a king as it can only move 1 square in each direction
         if (piece == Piece.King) {
-          if (board.squares[startSquare].piece.hasMoved) break;
+          if (board.squares[startSquare].piece.moveCount != 0) break;
           if (directionIndex == 1 || directionIndex == 3) {
             if (i == 1) break;
             let gapToRook = directionIndex == 1 ? 3 : 4;
             let rookSquare = board.squares[startSquare + this.DirectionOffsets[directionIndex] * gapToRook];
+            if (rookSquare.piece.moveCount != 0) break;
             if (rookSquare.piece == 0 || rookSquare.piece.type != Piece.Rook || rookSquare.piece.colour != board.turn) break;
             for (let j = 1; j < gapToRook; j++) {
               if (!board.squares[startSquare + this.DirectionOffsets[directionIndex] * j].empty) break outerloop;

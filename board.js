@@ -201,7 +201,7 @@ class Board {
       let colourInverter = board.turn == Piece.White ? 1 : -1;
       let takenPiece = isEnPassant ? this.squares[targetSquare - Move.PawnOffsets[0] * colourInverter].piece : this.squares[targetSquare].piece;
 
-      this.squares[startSquare].piece.hasMoved = true;
+      pieceMoved.moveCount++;
       this.squares[targetSquare].setPiece(this.squares[startSquare].piece);
       this.squares[startSquare].unset();
 
@@ -244,8 +244,9 @@ class Board {
       this.squares[this.lastMove.targetSquare - Move.PawnOffsets[0] * colourInverter].piece = this.lastMove.takenPiece;
     }
 
-    // Alternate whos turn it is
+    // Alternate whos turn it is and decrease the turn count for that piece
     this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+    this.lastMove.pieceMoved.moveCount--;
 
     // Check for castling
     if (this.lastMove.isCastle) {
@@ -255,7 +256,6 @@ class Board {
 
       this.squares[startRookSquare].piece = this.squares[currentRookSquare].piece;
       this.squares[currentRookSquare].unset();
-      this.lastMove.pieceMoved.hasMoved = false;
     }
 
     // Set start square piece to target square piece
