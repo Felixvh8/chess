@@ -159,6 +159,11 @@ class Board {
     console.log(fen);
   }
 
+  // Alternates the game turn, because it is code that has been written a lot
+  alternateTurn() {
+    this.turn = this.turn === Piece.White ? Piece.Black : Piece.White;
+  }
+
   // Unselects every square
   unselectSquares() {
     for (const square of this.squares) {
@@ -248,7 +253,7 @@ class Board {
       };
       this.playedMoves.push(this.lastMove);
 
-      this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+      this.alternateTurn();
     }
   }
 
@@ -267,7 +272,7 @@ class Board {
     }
 
     // Alternate whos turn it is and decrease the turn count for that piece
-    this.turn = this.turn == Piece.White ? Piece.Black : Piece.White;
+    this.alternateTurn();
     this.lastMove.pieceMoved.moveCount--;
 
     // Check for castling
@@ -312,8 +317,20 @@ class Board {
   }
 
   checkWinCondition() {
+    // Checks for legal moves
     if (Move.LegalMoves.length != 0) return;
 
+    // Inverts turn to see if there is an attack on the king
+    this.alternateTurn();
+    Move.GenerateLegalMoves();
+    for (const move of Move.LegalMoves) {
+      if (this.squares[move.targetSquare].piece.type == Piece.King) {
+        let winner = this.turn == Piece.White ? "White" : "Black";
+        alert(winner + " wins! Great Game!");
+        return;
+      }
+    }
+    
     alert("Stalemate! The games a draw!");
   }
 }
