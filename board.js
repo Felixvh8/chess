@@ -117,7 +117,7 @@ class Board {
 
     // Sets the absolute position
     for (const square of this.squares) {
-      if (square.empty) {
+      if (!square.piece.type) {
         emptySquares++;
 
         if (square.i == 7) {
@@ -270,8 +270,9 @@ class Board {
       this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
       this.squares[this.lastMove.targetSquare].empty = this.squares[this.lastMove.targetSquare].piece == 0 ? true : false;
     } else {
-      let colourInverter = this.turn === Piece.White ? 1 : -1;
+      let colourInverter = this.turn === Piece.White ? -1 : 1;
       this.squares[this.lastMove.targetSquare - Move.PawnOffsets[0] * colourInverter].piece = this.lastMove.takenPiece;
+      this.squares[this.lastMove.targetSquare].unset();
     }
 
     // Alternate whos turn it is and decrease the turn count for that piece
