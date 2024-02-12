@@ -115,8 +115,8 @@ class Board {
     let fen = "";
     let emptySquares = 0;
 
+    // Sets the absolute position
     for (const square of this.squares) {
-
       if (square.empty) {
         emptySquares++;
 
@@ -133,7 +133,33 @@ class Board {
       }
     }
 
-    fen += this.turn == Piece.White ? " w" : " b";
+    // Sets who starts
+    fen += this.turn == Piece.White ? " w " : " b ";
+
+    // Sets castling availability
+    let whiteKing = this.squares[60];
+    let blackKing = this.squares[4];
+    if (whiteKing.piece.type == Piece.King) {
+      if (whiteKing.piece.moveCount == 0) {
+        if (this.squares[63].piece.type == Piece.Rook && this.squares[63].piece.moveCount == 0 && this.squares[63].piece.colour == Piece.White) {
+          fen += "K";
+        }
+        if (this.squares[56].piece.type == Piece.Rook && this.squares[56].piece.moveCount == 0 && this.squares[56].piece.colour == Piece.White) {
+          fen += "Q";
+        }
+      }
+    }
+    if (blackKing.piece.type == Piece.King) {
+      if (blackKing.piece.moveCount == 0) {
+        if (this.squares[7].piece.type == Piece.Rook && this.squares[7].piece.moveCount == 0 && this.squares[7].piece.colour == Piece.Black) {
+          fen += "k";
+        }
+        if (this.squares[0].piece.type == Piece.Rook && this.squares[0].piece.moveCount == 0 && this.squares[0].piece.colour == Piece.Black) {
+          fen += "q";
+        }
+      }
+    }
+    
     console.log(fen);
   }
 
