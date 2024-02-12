@@ -64,6 +64,6 @@ function toggleLegalMoves() {
 
 function automate() {
   Move.GenerateMoves();
-  let moveIndex = Math.floor(Move.PseudoMoves.length * Math.random());
-  board.makeMove(board.squares[Move.PseudoMoves[moveIndex].startingSquare], board.squares[Move.PseudoMoves[moveIndex].targetSquare]);
+  let moveIndex = Math.floor(Move.LegalMoves.length * Math.random());
+  board.makeMove(board.squares[Move.LegalMoves[moveIndex].startingSquare], board.squares[Move.LegalMoves[moveIndex].targetSquare]);
 }

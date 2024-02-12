@@ -155,6 +155,9 @@ class Board {
         fen += "q";
       }
     }
+    if (fen[fen.length - 1] == " ") {
+      fen += "- "
+    }
 
     console.log(fen);
   }
