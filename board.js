@@ -288,4 +288,10 @@ class Board {
       this.squares[targetSquare + Move.DirectionOffsets[1]].unset();
     }
   }
+
+  checkWinCondition() {
+    if (Move.LegalMoves.length == 0) {
+      alert("Stalemate! The games a draw!");
+    }
+  }
 }

@@ -47,6 +47,7 @@ window.onload = function() {
     board.displaySquares(ctx);
 
     Move.GenerateLegalMoves();
+    board.checkWinCondition();
   });
 }
 
