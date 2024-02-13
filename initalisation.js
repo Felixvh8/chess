@@ -36,7 +36,7 @@ window.onload = function() {
 
     // Checks if the move is legal and makes the move if more than 1 square is selected
     if (selectedSquares.length > 1) {
-      board.makeMove(selectedSquares[0].index, selectedSquares[1].index, Move.LegalMoves);
+      board.makeMove(selectedSquares[0].index, selectedSquares[1].index, Move.LegalMoves, true);
       board.unselectSquares();
     }
     if (square) console.log(square); //---------------------------------------

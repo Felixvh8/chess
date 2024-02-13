@@ -205,7 +205,7 @@ class Board {
     return result;
   }
 
-  makeMove(startSquare, targetSquare, moveList) {
+  makeMove(startSquare, targetSquare, moveList, playerMove = false) {
     // Acts as a switch to see if the move is legal or en passant
     let legalMove = false;
     let isEnPassant = false;
@@ -239,7 +239,7 @@ class Board {
         if (isEnPassant) {
           this.squares[targetSquare - Move.PawnOffsets[0] * colourInverter].unset();
         } else if (isPromotion) {
-          this.promotion(targetSquare,  newPiece);
+          this.promotion(targetSquare, playerMove);
         }
       } else if (this.squares[targetSquare].piece.type == Piece.King && (targetSquare == startSquare - 2 || targetSquare == startSquare + 2)) {
         this.castle(targetSquare);
@@ -297,8 +297,13 @@ class Board {
     this.lastMove = this.playedMoves.length == 0 ? {} : this.playedMoves[this.playedMoves.length - 1];
   }
 
-  promotion(targetSquare) {
+  promotion(targetSquare, playerMove) {
     let newPiece = -1;
+
+    if (!playerMove) {
+      board.squares[targetSquare].setPiece(new Piece(this.turn, Piece.Queen));
+      return;
+    }
 
     while (newPiece != 'q' && newPiece != 'b' && newPiece != 'n' && newPiece != 'r' && newPiece != null && newPiece != "") {
       newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \nThe default piece is a queen. \nIf that piece is a Knight, type 'n'");
@@ -306,8 +311,8 @@ class Board {
 
     if (newPiece == null || newPiece == "") newPiece = 'q';
 
-    newPiece = this.turn == Piece.White ? input.toUpperCase() : input.toLowerCase();
-    board.squares[targetSquare].setPiece(input);
+    newPiece = this.turn == Piece.White ? newPiece.toUpperCase() : newPiece.toLowerCase();
+    board.squares[targetSquare].setPiece(newPiece);
   }
 
   castle(targetSquare) {
