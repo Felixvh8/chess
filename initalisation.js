@@ -15,10 +15,10 @@ window.onload = function() {
   ctx = canvas.getContext("2d");
 
   board = new Board();
-  board.setStartingPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ctx);
+  board.setStartingPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   // Test starting positions
-  // board.setStartingPosition("r1bq2kr/pppp1ppp/2n2n2/2b1p3/2B1P2P/5N2/PPPP1PP1/R3K2R w KQkq - 0 1", ctx);
-  board.displaySquares(ctx);
+  // board.setStartingPosition("r1bq2kr/pppp1ppp/2n2n2/2b1p3/2B1P2P/5N2/PPPP1PP1/R3K2R w KQkq - 0 1");
+  board.displaySquares();
   Move.GenerateLegalMoves();
 
   document.addEventListener("click", (e) => {
@@ -31,7 +31,6 @@ window.onload = function() {
     // Shows legal moves
     if (showLegalMoves && selectedSquares.length == 1) {
       Move.GenerateMovesForCurrentPiece(square.index);
-      board.displaySquares(ctx);
     }
 
     // Checks if the move is legal and makes the move if more than 1 square is selected
@@ -44,10 +43,10 @@ window.onload = function() {
 
     //if (board.turn == Piece.Black) automate();
     // Redraws the board after each click
-    board.displaySquares(ctx);
+    board.displaySquares();
 
     Move.GenerateLegalMoves();
-    board.checkWinCondition();
+    if (!board.winner) board.checkWinCondition();
   });
 }
 

@@ -4,6 +4,7 @@ class Board {
     this.squares = new Array(64);
     this.lastMove = {};
     this.playedMoves = [];
+    this.winner;
 
     // Creates the board, i indicates squares from the left, j indicates squares from the top
     for (let j = 0; j < 8; j++) {
@@ -42,13 +43,11 @@ class Board {
     }
   }
 
-  displaySquares(ctx) {
-    if (!ctx) throw "Any display function requires a context!";
-
+  displaySquares() {
     for (const square of this.squares) {
       ctx.fillStyle = (square.i + square.j) % 2 === 0 ? "#c2e1c2" : "#7dcd85";
       if (square.selected == true) {
-        ctx.fillStyle = (square.i + square.j) % 2 === 0 ? "#d2f1d2" : "#9deda5";
+        ctx.fillStyle = (square.i + square.j) % 2 === 0 ? "#d3f2d3" : "#9eeea6";
       } else if (square.legal == true) {
         ctx.fillStyle = (square.i + square.j) % 2 === 0 ? "#ab746e" : "#bc857f";
       }
@@ -56,8 +55,6 @@ class Board {
 
       let img;
       switch (square.piece.type) {
-        case 0:
-          break;
         case 1:
           img = square.piece.colour == Piece.White ? document.getElementById("kwhite") : document.getElementById("kblack");
           break;
@@ -83,8 +80,7 @@ class Board {
     }
   }
 
-  setStartingPosition(fen, ctx) {
-    if (!ctx) throw "Any display function requires a context!";
+  setStartingPosition(fen) {
     let boardFen = fen.split(" ")[0];
     let arr = boardFen.split("");
     let index = 0;
@@ -108,6 +104,8 @@ class Board {
 
     // Sets whose turn it is when the game starts form the FEN position
     this.turn = fen.split(" ")[1] == "w" ? Piece.White : Piece.Black;
+
+    this.displaySquares(ctx);
   }
 
   // Generates a fen from the current position
@@ -121,16 +119,16 @@ class Board {
         emptySquares++;
 
         if (square.i == 7) {
-          fen += square.j == 7 ? emptySquares : emptySquares + '/';
+          fen += emptySquares;
           emptySquares = 0;
         }
-
       } else {
         if (emptySquares != 0) fen += emptySquares;
         emptySquares = 0;
         fen += Piece.pieceToChar(square.piece.type, square.piece.colour);
-        if (square.i == 7 && square.j != 7) fen += "/";
       }
+
+      if (square.i == 7 && square.j != 7) fen += "/";
     }
 
     // Sets who starts
@@ -156,7 +154,7 @@ class Board {
       }
     }
     if (fen[fen.length - 1] == " ") {
-      fen += "- "
+      fen += "- ";
     }
 
     console.log(fen);
@@ -306,7 +304,7 @@ class Board {
     }
 
     while (newPiece != 'q' && newPiece != 'b' && newPiece != 'n' && newPiece != 'r' && newPiece != null && newPiece != "") {
-      newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \nThe default piece is a queen. \nIf that piece is a Knight, type 'n'");
+      newPiece = prompt("What piece would you like to promote to? \nType (in lower case) the first letter of the piece you would like to promote to. \nIf that piece is a Knight, type 'n' \nThe default piece is a queen.");
     }
 
     if (newPiece == null || newPiece == "") newPiece = 'q';
@@ -334,12 +332,15 @@ class Board {
     Move.GenerateLegalMoves();
     for (const move of Move.LegalMoves) {
       if (this.squares[move.targetSquare].piece.type == Piece.King) {
-        let winner = this.turn == Piece.White ? "White" : "Black";
-        alert(winner + " wins! Great Game!");
+        this.winner = this.turn == Piece.White ? "White" : "Black";
+        alert(this.winner + " wins! Great Game!");
+        this.alternateTurn();
         return;
       }
     }
     
+    this.alternateTurn();
+    this.winner = "Draw";
     alert("Stalemate! The games a draw!");
   }
 }

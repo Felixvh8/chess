@@ -26,10 +26,8 @@ class Move {
           this.GeneratePawnMoves(startSquare);
         } else if (piece == Piece.Queen || piece == Piece.Bishop || piece == Piece.Rook || piece == Piece.King) {
           this.GenerateSlidingMoves(startSquare, piece);
-          continue;
         } else if (piece == Piece.Knight) {
           this.GenerateKnightMoves(startSquare);
-          continue;
         }
       }
     }
@@ -134,7 +132,6 @@ class Move {
   static GenerateMovesForCurrentPiece(startSquare) {
     for (const move of this.LegalMoves) {
       if (move.startSquare != startSquare) continue;
-
       board.squares[move.targetSquare].legal = true;
     }
   }
@@ -150,7 +147,6 @@ class Move {
       if (this.TestMove(move.startSquare, move.targetSquare, pseudoMoves)) this.LegalMoves.push(move);
     }
     
-
     // Return new legal moves array
     console.log(this.LegalMoves);
     return this.LegalMoves;
