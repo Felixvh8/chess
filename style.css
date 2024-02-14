@@ -4,8 +4,19 @@ canvas {
 
 button {
   width: 150px;
+  height: 25px;
   margin-bottom: 10px;
   margin-top: 0px;
+  border: 1px solid black;
+  border-radius: 3px;
+  cursor: pointer;
+  background-color: aliceblue;
+  color: rgb(56,56,56);
+}
+
+button:hover {
+  background-color: rgb(56, 56, 56);
+  color: aliceblue;
 }
 
 #main {
@@ -17,7 +28,7 @@ button {
   position: absolute;
   left: 430px;
   top: 20px;
-  width: 170px;
+  width: 150px;
 }
 
 .piece {
