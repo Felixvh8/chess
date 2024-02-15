@@ -330,8 +330,8 @@ class Board {
 
     // Inverts turn to see if there is an attack on the king
     this.alternateTurn();
-    Move.GenerateLegalMoves();
-    for (const move of legalMoves) {
+    let moves = Move.GenerateLegalMoves();
+    for (const move of moves) {
       if (this.squares[move.targetSquare].piece.type == Piece.King) {
         this.winner = this.turn == Piece.White ? "White" : "Black";
         alert(this.winner + " wins! Great Game!");
