@@ -342,5 +342,7 @@ class Board {
     this.alternateTurn();
     this.winner = "Draw";
     alert("Stalemate! The games a draw!");
+
+    if (timerID) clearInterval(timerID);
   }
 }

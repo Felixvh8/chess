@@ -148,7 +148,6 @@ class Move {
     }
     
     // Return new legal moves array
-    console.log(this.LegalMoves);
     return this.LegalMoves;
   }
 
@@ -171,5 +170,20 @@ class Move {
     // Returns board to the current position
     board.unmakeMove();
     return true;
+  }
+
+  static MoveGenerationTest(depth) {
+    if (depth == 0) {
+      return 1;
+    }
+
+    let moves = this.GenerateLegalMoves();
+    let numPositions = 0;
+    for (const move of moves) {
+      board.makeMove(move.startSquare, move.targetSquare, moves);
+      numPositions += this.MoveGenerationTest(depth - 1);
+      unmakeMove();
+    }
+    return numPositions;
   }
 }

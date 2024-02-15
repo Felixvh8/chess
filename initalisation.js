@@ -21,6 +21,11 @@ window.onload = function() {
   board.displaySquares();
   Move.GenerateLegalMoves();
 
+  // For letting bots face eachother
+  //let timerID = setInterval(automate, 100);
+
+  console.log(Move.MoveGenerationTest(2));
+
   document.addEventListener("click", (e) => {
     let square = board.getSelectedSquare(canvas, e);
 
@@ -63,6 +68,8 @@ function toggleLegalMoves() {
 
 function automate() {
   Move.GenerateLegalMoves();
+  if (!board.winner) board.checkWinCondition();
   let moveIndex = Math.floor(Move.LegalMoves.length * Math.random());
   board.makeMove(Move.LegalMoves[moveIndex].startSquare, Move.LegalMoves[moveIndex].targetSquare, Move.LegalMoves);
+  board.displaySquares();
 }
