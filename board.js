@@ -315,7 +315,7 @@ class Board {
   }
 
   castle(targetSquare) {
-    if (targetSquare.i == 2) {
+    if (this.squares[targetSquare].i == 2) {
       this.squares[targetSquare + Move.DirectionOffsets[1]].piece = this.squares[targetSquare + Move.DirectionOffsets[3] * 2].piece;
       this.squares[targetSquare + Move.DirectionOffsets[3] * 2].unset();
     } else {

@@ -20,7 +20,7 @@ window.onload = function() {
   board = new Board();
   board.setStartingPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   // Test starting positions
-  // board.setStartingPosition("r1bq2kr/pppp1ppp/2n2n2/2b1p3/2B1P2P/5N2/PPPP1PP1/R3K2R w KQkq - 0 1");
+  board.setStartingPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
   board.displaySquares();
   legalMoves = Move.GenerateLegalMoves();
 
