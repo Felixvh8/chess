@@ -50,7 +50,7 @@ window.onload = function() {
     if (square) console.log(square); //---------------------------------------
 
 
-    //if (board.turn == Piece.Black) automate();
+    if (board.turn == Piece.Black) automate();
     // Redraws the board after each click
     board.displaySquares();
 
@@ -73,7 +73,7 @@ function toggleLegalMoves() {
 function automate() {
   legalMoves = Move.GenerateLegalMoves();
   if (!board.winner) board.checkWinCondition();
-  let moveIndex = Math.floor(legalMoves.length * Math.random());
+  let moveIndex = evaluate(); 
   board.makeMove(legalMoves[moveIndex].startSquare, legalMoves[moveIndex].targetSquare, legalMoves);
   board.displaySquares();
 }
@@ -87,4 +87,19 @@ function end() {
   let timeDiff = endTime - startTime; //in ms
   
   return timeDiff + " milliseconds";
+}
+
+function evaluate() {
+  let maxResponses = 1000000;
+  let chosenIndex;
+  for (let i = 0; i < legalMoves.length; i++) {
+    board.makeMove(legalMoves[i].startSquare, legalMoves[i].targetSquare, legalMoves);
+    let responses = Move.GenerateLegalMoves();
+    if (responses.length < maxResponses) {
+      maxResponses = responses.length;
+      chosenIndex = i;
+    }
+    board.unmakeMove();
+  }
+  return chosenIndex;
 }
