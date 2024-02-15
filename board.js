@@ -230,7 +230,7 @@ class Board {
       let takenPiece = isEnPassant ? this.squares[targetSquare - Move.PawnOffsets[0] * colourInverter].piece : this.squares[targetSquare].piece;
 
       pieceMoved.moveCount++;
-      this.squares[targetSquare].setPiece(this.squares[startSquare].piece);
+      this.squares[targetSquare].piece = this.squares[startSquare].piece;
       this.squares[startSquare].unset();
 
       if (this.squares[targetSquare].piece.type == Piece.Pawn) {
@@ -264,9 +264,10 @@ class Board {
     if (this.playedMoves.length == 0 || !this.lastMove.hasOwnProperty("startSquare")) return;
     
     // Set target square (or en passant square) piece to taken piece
-    if (!this.lastMove.isEnPassant) {
+    if (this.lastMove.takenPiece == 0) {
+      this.squares[this.lastMove.targetSquare].unset();
+    } else if (!this.lastMove.isEnPassant) {
       this.squares[this.lastMove.targetSquare].piece = this.lastMove.takenPiece;
-      this.squares[this.lastMove.targetSquare].empty = this.squares[this.lastMove.targetSquare].piece == 0 ? true : false;
     } else {
       let colourInverter = this.turn === Piece.White ? -1 : 1;
       this.squares[this.lastMove.targetSquare - Move.PawnOffsets[0] * colourInverter].piece = this.lastMove.takenPiece;
@@ -325,12 +326,12 @@ class Board {
 
   checkWinCondition() {
     // Checks for legal moves
-    if (Move.LegalMoves.length != 0) return;
+    if (legalMoves.length != 0) return;
 
     // Inverts turn to see if there is an attack on the king
     this.alternateTurn();
     Move.GenerateLegalMoves();
-    for (const move of Move.LegalMoves) {
+    for (const move of legalMoves) {
       if (this.squares[move.targetSquare].piece.type == Piece.King) {
         this.winner = this.turn == Piece.White ? "White" : "Black";
         alert(this.winner + " wins! Great Game!");

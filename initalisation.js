@@ -6,6 +6,9 @@ let canvas;
 let ctx;
 let DEVELOPER_FLAG = true;
 let showLegalMoves = DEVELOPER_FLAG ? true : false;
+let legalMoves;
+let timerID;
+let startTime, endTime;
 
 // Called when the window fully loads, limit this
 // function to things that require use of the document space
@@ -19,12 +22,13 @@ window.onload = function() {
   // Test starting positions
   // board.setStartingPosition("r1bq2kr/pppp1ppp/2n2n2/2b1p3/2B1P2P/5N2/PPPP1PP1/R3K2R w KQkq - 0 1");
   board.displaySquares();
-  Move.GenerateLegalMoves();
+  legalMoves = Move.GenerateLegalMoves();
 
   // For letting bots face eachother
-  //let timerID = setInterval(automate, 100);
+  //timerID = setInterval(automate, 100);
 
-  console.log(Move.MoveGenerationTest(2));
+  //start();
+  //console.log(Move.MoveGenerationTest(5), end());
 
   document.addEventListener("click", (e) => {
     let square = board.getSelectedSquare(canvas, e);
@@ -40,7 +44,7 @@ window.onload = function() {
 
     // Checks if the move is legal and makes the move if more than 1 square is selected
     if (selectedSquares.length > 1) {
-      board.makeMove(selectedSquares[0].index, selectedSquares[1].index, Move.LegalMoves, true);
+      board.makeMove(selectedSquares[0].index, selectedSquares[1].index, legalMoves, true);
       board.unselectSquares();
     }
     if (square) console.log(square); //---------------------------------------
@@ -50,7 +54,7 @@ window.onload = function() {
     // Redraws the board after each click
     board.displaySquares();
 
-    Move.GenerateLegalMoves();
+    legalMoves = Move.GenerateLegalMoves();
     if (!board.winner) board.checkWinCondition();
   });
 }
@@ -67,9 +71,20 @@ function toggleLegalMoves() {
 }
 
 function automate() {
-  Move.GenerateLegalMoves();
+  legalMoves = Move.GenerateLegalMoves();
   if (!board.winner) board.checkWinCondition();
-  let moveIndex = Math.floor(Move.LegalMoves.length * Math.random());
-  board.makeMove(Move.LegalMoves[moveIndex].startSquare, Move.LegalMoves[moveIndex].targetSquare, Move.LegalMoves);
+  let moveIndex = Math.floor(legalMoves.length * Math.random());
+  board.makeMove(legalMoves[moveIndex].startSquare, legalMoves[moveIndex].targetSquare, legalMoves);
   board.displaySquares();
+}
+
+function start() {
+  startTime = performance.now();
+};
+
+function end() {
+  endTime = performance.now();
+  let timeDiff = endTime - startTime; //in ms
+  
+  return timeDiff + " milliseconds";
 }

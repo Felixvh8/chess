@@ -7,7 +7,6 @@ class Move {
     this.castle = castle;
   }
 
-  static LegalMoves;
   static PseudoLegalMoves;
   static DirectionOffsets = [-8, 1, 8, -1, -7, 9, 7, -9];
   static KnightOffsets = [-15, -6, 10, 17, 15, 6, -10, -17];
@@ -19,6 +18,7 @@ class Move {
     this.PseudoLegalMoves = new Array;
 
     for (let startSquare = 0; startSquare < 64; startSquare++) {
+      if (board.squares[startSquare].piece == 0) continue;
       let piece = board.squares[startSquare].piece.type;
 
       if (board.squares[startSquare].piece.colour == board.turn) {
@@ -66,7 +66,7 @@ class Move {
             if (rookSquare.piece.moveCount != 0) break;
             if (rookSquare.piece == 0 || rookSquare.piece.type != Piece.Rook || rookSquare.piece.colour != board.turn) break;
             for (let j = 1; j < gapToRook; j++) {
-              if (!board.squares[startSquare + this.DirectionOffsets[directionIndex] * j].empty) break outerloop;
+              if (board.squares[startSquare + this.DirectionOffsets[directionIndex] * j].piece) break outerloop;
             }
           } else {
             break;
@@ -98,14 +98,16 @@ class Move {
   static GeneratePawnMoves(startSquare) {
     // Inverses the index offset for black pieces
     let colourInverter = board.turn == Piece.White ? 1 : -1;
-    let isEnPassant = false;
-    let isPromotion = false;
+    let isEnPassant;
+    let isPromotion;
 
     for (let directionIndex = 0; directionIndex < this.PawnOffsets.length; directionIndex++) {
+      isEnPassant = false;
+      isPromotion = false;
       let targetSquare = startSquare + (this.PawnOffsets[directionIndex] * colourInverter);
       if (targetSquare < 0 || targetSquare > 63) continue;
 
-      if (board.squares[startSquare].index > 15 && board.squares[startSquare].index < 48 && directionIndex == 1) continue;
+      if (startSquare > 15 && startSquare < 48 && directionIndex == 1) continue;
       if (directionIndex == 1 && board.squares[startSquare + this.PawnOffsets[0] * colourInverter].piece != 0) continue;
       if (startSquare % 8 == 0 && targetSquare % 8 > 3 || startSquare % 8 == 7 && targetSquare % 8 < 4) continue;
       if (board.squares[targetSquare].piece.colour == board.turn) continue;
@@ -130,7 +132,8 @@ class Move {
 
   // Shows legal moves
   static GenerateMovesForCurrentPiece(startSquare) {
-    for (const move of this.LegalMoves) {
+    let moves = this.GenerateLegalMoves();
+    for (const move of moves) {
       if (move.startSquare != startSquare) continue;
       board.squares[move.targetSquare].legal = true;
     }
@@ -140,15 +143,15 @@ class Move {
   static GenerateLegalMoves() {
     // Generate all possible movements for pieces
     let pseudoMoves = this.GenerateMoves();
-    this.LegalMoves = new Array;
+    let legalMoves = new Array;
 
     // for move in moves
     for (const move of pseudoMoves) {
-      if (this.TestMove(move.startSquare, move.targetSquare, pseudoMoves)) this.LegalMoves.push(move);
+      if (this.TestMove(move.startSquare, move.targetSquare, pseudoMoves)) legalMoves.push(move);
     }
     
     // Return new legal moves array
-    return this.LegalMoves;
+    return legalMoves;
   }
 
   static TestMove(startSquare, targetSquare, moveList) {
@@ -173,16 +176,15 @@ class Move {
   }
 
   static MoveGenerationTest(depth) {
-    if (depth == 0) {
-      return 1;
-    }
-
     let moves = this.GenerateLegalMoves();
+    if (depth == 1) {
+      return moves.length;
+    }
     let numPositions = 0;
     for (const move of moves) {
       board.makeMove(move.startSquare, move.targetSquare, moves);
       numPositions += this.MoveGenerationTest(depth - 1);
-      unmakeMove();
+      board.unmakeMove();
     }
     return numPositions;
   }
