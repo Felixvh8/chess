@@ -1,7 +1,7 @@
 class Board {
   constructor() {
     Board.PrecomputedMoveData();
-    this.squares = new Array(64);
+    this.squares = new Array(BOARD_SIZE);
     this.lastMove = {};
     this.playedMoves = [];
     this.winner;

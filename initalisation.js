@@ -1,5 +1,6 @@
 // CONSTANTS //
 const SQUARE_SIZE = 50;
+const BOARD_SIZE = 64;
 let selectedSquares = [];
 let board;
 let canvas;
@@ -20,7 +21,7 @@ window.onload = function() {
   board = new Board();
   board.setStartingPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   // Test starting positions
-  board.setStartingPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
+  //board.setStartingPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
   board.displaySquares();
   legalMoves = Move.GenerateLegalMoves();
 
@@ -95,7 +96,7 @@ function evaluate() {
   for (let i = 0; i < legalMoves.length; i++) {
     board.makeMove(legalMoves[i].startSquare, legalMoves[i].targetSquare, legalMoves);
     let responses = Move.GenerateLegalMoves();
-    if (responses.length < maxResponses) {
+    if (responses.length < maxResponses && Math.random() < 0.7) {
       maxResponses = responses.length;
       chosenIndex = i;
     }

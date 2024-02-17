@@ -15,8 +15,8 @@ class Piece {
   static Pawn = 6;
 
   // Piece colour as integer
-  static White = 0;
-  static Black = 1;
+  static White = 8;
+  static Black = 16;
 
   static pieceToChar(type, colour) {
     switch (type) {
