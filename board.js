@@ -17,7 +17,7 @@ class Board {
     this.turn = Piece.White;
   }
 
-  static NumSquaresToEdge = new Array(64);
+  static NumSquaresToEdge = new Array(BOARD_SIZE);
 
   static PrecomputedMoveData() {
     for (let j = 0; j < 8; j++) {
